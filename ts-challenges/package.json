@@ -1,0 +1,15 @@
+{
+  "name": "ts-challenges",
+  "version": "1.0.0",
+  "description": "<!--\r  * @Description: \r  * @version: \r  * @Author: 初柒\r  * @Date: 2022-02-07 21:09:34\r  * @LastEditors: 初柒\r  * @LastEditTime: 2022-02-07 21:09:34\r -->\r <p align='center'>\r   <img src='./screenshots/logo.svg' width='400'/>\r </p>",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/node": "^17.0.15"
+  }
+}
