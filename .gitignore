@@ -1,2 +1,3 @@
-# 忽略ts-challenges下的文件
-/ts-challenges/node_modules/
+# 忽略node_modules文件夹
+/*/node_modules/
+/*/*/node_modules/
