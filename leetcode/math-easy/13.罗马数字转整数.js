@@ -1,5 +1,5 @@
 /*
- * @LastEditTime: 2022-06-14 16:34:08
+ * @LastEditTime: 2022-06-15 16:10:53
  * @Description: 
  */
 /*
@@ -15,7 +15,6 @@
  */
 var romanToInt = function(s) {
     const arr = s.split('').map(item=>{
-        console.log(item);
         switch (item) {
             case 'I': return 1
             case 'V': return 5
@@ -27,16 +26,15 @@ var romanToInt = function(s) {
         }
     })
     let num = 0
-    let lastNum = 1000
+    let lastNum = 0
     while (arr.length) {
         const pop = arr.pop()
-        if (pop > lastNum) {
+        if (pop < lastNum) {
             num -= pop
         }else {
             num += pop 
         }
         lastNum = pop;
-        console.log(pop,num);
     }
     return num
 };
