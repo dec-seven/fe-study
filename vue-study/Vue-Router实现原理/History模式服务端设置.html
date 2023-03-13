@@ -1,0 +1,72 @@
+<!--
+ * @Date: 2023-03-13 22:20:26
+ * @LastEditTime: 2023-03-13 22:39:28
+ * @Description: 
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  
+</body>
+<script>
+  // Node.js Web服务器 （以下为node代码）
+
+  const path = require('path')
+
+  // 导入处理history模式的模块
+  const history = require('connect-history-api-fallback')
+  // 导入 express
+  const express = require('express')
+
+  const app = express()
+  // 注册处理history模式的中间件
+  app.use(history())
+  // 处理静态资源的中间件，网站根目录../web
+  app.use(express.static(path.join(__dirname,'../web')))
+
+  // 开启服务器，端口是3000
+  app.listen(3000,()=>{
+    console.log("服务器开启，端口：3000");
+  })
+
+
+  // nginx服务器配置
+  /**
+   * 从官网下载Nginx的压缩包
+   * 把压缩包解压到c盘根目录，c:\nginx-1.18.0文件夹
+   * 打开命令行，切换到目录c:\nginx-1.18.0 
+   */
+
+  // 启动Nginx命令
+  /**
+   * # 启动
+   * start nginx
+   * 
+   * # 重启
+   * nginx -s reload
+   * 
+   * # 停止
+   * nginx -s stop 
+   */  
+
+  // 修改nginx.conf文件
+  /**
+   *  server {
+   *    location / {
+   *      try_files $uri $uri/ /index.html;   
+   * 
+   *    }
+   *  }
+   * 
+   * 
+   * 
+   */ 
+
+</script>
+</html>
