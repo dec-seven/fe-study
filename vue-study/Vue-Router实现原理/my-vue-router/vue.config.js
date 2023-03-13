@@ -1,4 +1,5 @@
-const { defineConfig } = require('@vue/cli-service')
-module.exports = defineConfig({
-  transpileDependencies: true
-})
+module.exports = {
+  // 选项...
+  // 使用完整版
+  // runtimeCompiler:true
+}

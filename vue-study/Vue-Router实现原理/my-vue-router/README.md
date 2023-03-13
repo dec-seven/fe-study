@@ -1,4 +1,4 @@
-# my-vue-router
+# frontend
 
 ## Project setup
 ```
