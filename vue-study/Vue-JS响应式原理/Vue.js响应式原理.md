@@ -1,6 +1,6 @@
 <!--
  * @Date: 2023-03-16 10:47:09
- * @LastEditTime: 2023-03-16 10:57:35
+ * @LastEditTime: 2023-04-08 14:14:05
  * @Description: 
 -->
 ## Vue响应式原理模拟
@@ -25,8 +25,11 @@
 
 
 ### 响应式的核心原理
-  Vue 2.x
-  Object.defineProperty (浏览器兼容IE8以上)
-
+  #### Vue 2.x
+    Object.defineProperty (浏览器兼容IE8以上)
+  Vue 3.x
+  #### Proxy
+    直接监听对象，而非属性
+    ES6中新增，IE不支持，性能由浏览器优化
 ### 发布订阅模式和观察者模式
 
