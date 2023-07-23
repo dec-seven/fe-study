@@ -1,0 +1,36 @@
+<!--
+ * @Date: 2023-07-21 22:09:03
+ * @LastEditTime: 2023-07-21 22:14:05
+ * @Description: 
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>原型链</title>
+</head>
+<body>
+  <script>
+    // 1. 构造函数
+    function Person(name,age){
+      this.name = name
+      this.age = age
+    }
+
+    // 2.原型对象: 存储具有共同特征的数据
+    Person.prototype.type = '哺乳动物'
+    Person.prototype.country = '中国'
+    Person.prototype.eat = function(){
+      console.log("我会吃东西");
+    }
+
+    // 3.实例对象
+     let p1 = new Person('Dn',20)
+
+     console.log(p1.name);
+     console.log(p1.age);
+     p1.eat()
+  </script>  
+</body>
+</html>

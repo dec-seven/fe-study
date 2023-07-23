@@ -1,0 +1,44 @@
+<!--
+ * @Date: 2023-07-21 21:59:34
+ * @LastEditTime: 2023-07-21 22:08:47
+ * @Description: 原型继承
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>原型继承</title>
+</head>
+<body>
+  <script>
+
+    // 父对象
+    let father = {
+      house:{},
+      car:{
+        brand:""
+      }
+    }
+
+    // 子对象
+    // 构造函数
+    function Son(name,age){
+      this.name = name
+      this.age = age
+    }
+
+    // 原型继承：把父对象作为子对象构造函数的原型
+    Son.prototype = father
+    // 可选：原型继承之后，由于父对象覆盖原来的子对象构造函数原型，就会导致constructor消失
+    Son.prototype.constructor = Son
+
+    // 实例对象
+    const son1 = new Son('Du',20)
+    const son2 = new Son('Lu',18)
+
+    console.log(son1,son2);
+
+  </script>  
+</body>
+</html>
