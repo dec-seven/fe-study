@@ -1,0 +1,29 @@
+<!--
+ * @Date: 2023-07-23 19:12:15
+ * @LastEditTime: 2023-07-23 19:47:34
+ * @Description: 
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>构造函数</title>
+</head>
+<body>
+  <script>
+    function Person(name,age){
+      this.name = name
+      this.age = age
+      this.eat = function(){
+        console.log('吃东西')
+      }
+    }
+
+    const p1 = new Person('Du', 18)
+    const p2 = new Person('Lu', 20)
+    console.log(p1,p2);  
+    console.log(p1.eat === p2.eat) 
+  </script>
+</body>
+</html>
