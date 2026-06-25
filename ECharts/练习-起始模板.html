@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>ECharts 实战练习 - 起始模板</title>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.6.0/dist/echarts.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, sans-serif; padding: 20px; background: #f5f5f5; color: #333; }
+    h1 { margin-bottom: 16px; }
+    .task {
+      background: #fff; border-radius: 8px; padding: 16px; margin-bottom: 24px;
+      border-left: 4px solid #5470c6;
+    }
+    .task.green { border-left-color: #67c23a; }
+    .task.yellow { border-left-color: #e6a23c; }
+    .task.red { border-left-color: #f56c6c; }
+    h2 { font-size: 18px; margin-bottom: 4px; }
+    .goal { font-size: 13px; color: #888; margin-bottom: 12px; }
+    .chart { width: 100%; height: 360px; }
+    .actions { margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap; }
+    button {
+      padding: 6px 16px; border: none; border-radius: 4px;
+      cursor: pointer; font-size: 13px; color: #fff; background: #5470c6;
+    }
+    button.g { background: #909399; }
+    .todo {
+      background: #fffbe6; border: 1px dashed #e6a23c; border-radius: 4px;
+      padding: 8px 12px; font-size: 12px; color: #ad6800; margin-top: 8px;
+    }
+    code { background: #f0f0f0; padding: 2px 5px; border-radius: 3px; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <h1>ECharts 实战练习 · 起始模板</h1>
+  <p style="color:#888;font-size:13px;margin-bottom:20px;">
+    跟着 <code>实战练习.md</code> 的需求，把每个 TODO 填完。需求文档里有考点和提示，但不给完整答案。
+  </p>
+
+  <!-- ============ 需求一：销售数据看板 ============ -->
+  <div class="task green">
+    <h2>🟢 需求一：销售数据看板（双Y轴 + 事件 + toolbox）</h2>
+    <div class="goal">双Y轴组合图 / 平滑折线渐变 / axis tooltip / 点击柱子 alert / toolbox</div>
+    <div id="chart1" class="chart"></div>
+    <div class="todo">
+      TODO 1: 配置 yAxis 为数组（左轴销售额、右轴增长率%）<br>
+      TODO 2: series = bar(销售额) + line(增长率, yAxisIndex:1, smooth, areaStyle渐变)<br>
+      TODO 3: tooltip.trigger='axis'，formatter 给增长率加 %<br>
+      TODO 4: chart1.on('click', ...) 弹出月份+销售额<br>
+      TODO 5: toolbox.feature 加 saveAsImage + magicType
+    </div>
+  </div>
+
+  <!-- ============ 需求二：dataset 动态切换 ============ -->
+  <div class="task yellow">
+    <h2>🟡 需求二：dataset + 动态切换品类（数据驱动）</h2>
+    <div class="goal">dataset.source / encode / 合并 setOption / dataZoom</div>
+    <div class="actions" style="margin-bottom:12px;">
+      <button onclick="switchCategory('全部')">全部</button>
+      <button onclick="switchCategory('手机')">手机</button>
+      <button onclick="switchCategory('家电')">家电</button>
+    </div>
+    <div id="chart2" class="chart"></div>
+    <div class="todo">
+      TODO 1: 用 dataset.source 二维数组管理数据（禁止写死 series.data）<br>
+      TODO 2: series 用 encode 做维度映射<br>
+      TODO 3: switchCategory() 里用合并模式 setOption 更新（或 transform.filter）<br>
+      TODO 4: 加 dataZoom slider 型
+    </div>
+  </div>
+
+  <!-- ============ 需求三：双图联动 + 大数据 ============ -->
+  <div class="task red">
+    <h2>🔴 需求三：双图联动 + 大数据性能</h2>
+    <div class="goal">1万点折线 / sampling+large+progressive / visualMap / connect 联动 / loading / dispose</div>
+    <div class="actions" style="margin-bottom:12px;">
+      <button onclick="regenerate()">重新生成数据</button>
+    </div>
+    <div id="chart3a" class="chart"></div>
+    <div id="chart3b" class="chart" style="height:300px;margin-top:12px;"></div>
+    <div class="todo">
+      TODO 1: 生成 10000 个点，折线开 sampling:'lttb' + large:true (+progressive)<br>
+      TODO 2: visualMap continuous，按值映射颜色（高→红 低→绿，中国习惯）<br>
+      TODO 3: 折线加 dataZoom inside（滚轮缩放）<br>
+      TODO 4: 两图 group='g1' + echarts.connect('g1') 联动<br>
+      TODO 5: regenerate() 里 showLoading/hideLoading + 正确 dispose 旧实例
+    </div>
+  </div>
+
+  <script>
+    // ============ 全局实例（记得 dispose） ============
+    let chart1, chart2, chart3a, chart3b;
+
+    // ============ 需求一 ============
+    function initTask1() {
+      chart1 = echarts.init(document.getElementById('chart1'));
+      const months = ['1月','2月','3月','4月','5月','6月'];
+      const sales = [820, 932, 901, 934, 1290, 1330];
+      const growth = [0, 13.7, -3.3, 3.7, 38.1, 3.1];
+
+      chart1.setOption({
+        title: { text: '月度销售看板', left: 'center' },
+        // TODO 1: tooltip trigger=axis + formatter 给增长率加 %
+        tooltip: {},
+        legend: { data: ['销售额', '增长率'], bottom: 0 },
+        xAxis: { type: 'category', data: months },
+        // TODO 1: yAxis 改成数组（左:销售额  右:增长率%）
+        yAxis: { type: 'value' },
+        series: [
+          // TODO 2: bar 销售额
+          { name: '销售额', type: 'bar', data: sales },
+          // TODO 2: line 增长率，yAxisIndex:1, smooth:true, areaStyle 渐变
+          { name: '增长率', type: 'line', data: growth }
+        ]
+        // TODO 5: toolbox.feature saveAsImage + magicType
+      });
+
+      // TODO 4: chart1.on('click', params => alert(...))
+    }
+
+    // ============ 需求二 ============
+    const rawData = [
+      ['月份', '手机', '家电'],
+      ['1月', 120, 80],
+      ['2月', 200, 130],
+      ['3月', 150, 90],
+      ['4月', 80, 160],
+      ['5月', 270, 110],
+      ['6月', 310, 200]
+    ];
+
+    function initTask2() {
+      chart2 = echarts.init(document.getElementById('chart2'));
+      chart2.setOption({
+        title: { text: '品类销售（dataset 驱动）', left: 'center' },
+        tooltip: { trigger: 'axis' },
+        legend: { bottom: 0 },
+        xAxis: { type: 'category' },
+        yAxis: { type: 'value' },
+        // TODO 1: 用 dataset.source = rawData
+        dataset: {},
+        // TODO 2: series 用 encode 映射维度（默认展示全部品类）
+        series: []
+        // TODO 4: dataZoom slider
+      });
+    }
+
+    function switchCategory(cat) {
+      // TODO 3: 用合并模式 setOption 更新 series（按 cat 过滤显示）
+      console.log('切换到', cat);
+    }
+
+    // ============ 需求三 ============
+    function genData(n) {
+      // 生成 n 个 [index, value] 点
+      return Array.from({ length: n }, (_, i) => [i, +(Math.random() * 100).toFixed(2)]);
+    }
+
+    function initTask3() {
+      chart3a = echarts.init(document.getElementById('chart3a'));
+      chart3b = echarts.init(document.getElementById('chart3b'));
+      renderTask3(genData(10000));
+
+      // TODO 4: 设置 group 并 echarts.connect('g1')
+    }
+
+    function renderTask3(data) {
+      chart3a.setOption({
+        title: { text: '实时曲线（1万点）', left: 'center' },
+        tooltip: { trigger: 'axis' },
+        xAxis: { type: 'value' },
+        yAxis: { type: 'value' },
+        // TODO 2: visualMap continuous，inRange.color 高红低绿
+        // TODO 3: dataZoom inside
+        series: [{
+          type: 'line',
+          showSymbol: false,
+          data: data
+          // TODO 1: sampling:'lttb', large:true, progressive...
+        }]
+      });
+
+      // 饼图：按数值分段统计占比
+      const buckets = [0, 0, 0]; // 低/中/高
+      data.forEach(([, v]) => {
+        if (v < 33) buckets[0]++;
+        else if (v < 66) buckets[1]++;
+        else buckets[2]++;
+      });
+      chart3b.setOption({
+        title: { text: '分段占比', left: 'center' },
+        tooltip: { trigger: 'item', formatter: '{b}: {d}%' },
+        series: [{
+          type: 'pie', radius: ['40%', '65%'],
+          data: [
+            { name: '低(0-33)', value: buckets[0] },
+            { name: '中(33-66)', value: buckets[1] },
+            { name: '高(66-100)', value: buckets[2] }
+          ]
+        }]
+      });
+    }
+
+    function regenerate() {
+      // TODO 5: showLoading -> 生成 -> render -> hideLoading
+      // 注意：是否需要 dispose？体会一下
+      renderTask3(genData(10000));
+    }
+
+    // ============ 启动 ============
+    initTask1();
+    initTask2();
+    initTask3();
+
+    // resize 防抖
+    let t;
+    window.addEventListener('resize', () => {
+      clearTimeout(t);
+      t = setTimeout(() => {
+        [chart1, chart2, chart3a, chart3b].forEach(c => c?.resize());
+      }, 200);
+    });
+  </script>
+</body>
+</html>

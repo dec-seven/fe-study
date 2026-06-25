@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>ECharts 核心概念</title>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.6.0/dist/echarts.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, sans-serif; padding: 20px; background: #f5f5f5; }
+    h2 { color: #333; margin: 20px 0 10px; }
+    .demo { background: #fff; border-radius: 8px; padding: 16px; margin-bottom: 20px; }
+    .chart { width: 100%; height: 350px; }
+    .actions { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; }
+    button {
+      padding: 6px 16px; border: none; border-radius: 4px;
+      cursor: pointer; font-size: 13px; color: #fff;
+    }
+    .btn-pri { background: #5470c6; }
+    .btn-warn { background: #e6a23c; }
+    .btn-danger { background: #f56c6c; }
+    .btn-info { background: #909399; }
+    .info { font-size: 13px; color: #666; margin-top: 8px; line-height: 1.6; }
+    code { background: #f0f0f0; padding: 2px 6px; border-radius: 3px; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <h1>Part 1: ECharts 核心概念</h1>
+
+  <!-- Demo 1: 基础初始化 + 三种 option 结构 -->
+  <div class="demo">
+    <h2>1. 初始化 & Option 结构</h2>
+    <div id="chart1" class="chart"></div>
+    <div class="actions">
+      <button class="btn-pri" onclick="initChart1()">初始化</button>
+      <button class="btn-danger" onclick="disposeChart1()">销毁</button>
+    </div>
+    <div class="info">
+      三大结构：<code>组件(title/tooltip/legend)</code> → <code>坐标轴(xAxis/yAxis)</code> → <code>系列(series)</code>
+    </div>
+  </div>
+
+  <!-- Demo 2: setOption 合并 vs 替换 -->
+  <div class="demo">
+    <h2>2. setOption 合并模式 vs 替换模式</h2>
+    <div id="chart2" class="chart"></div>
+    <div class="actions">
+      <button class="btn-pri" onclick="mergeOption()">合并(notMerge=false)</button>
+      <button class="btn-warn" onclick="replaceOption()">替换(notMerge=true)</button>
+      <button class="btn-info" onclick="resetChart2()">重置</button>
+    </div>
+    <div class="info">
+      <strong>合并</strong>：新 option 深度合并到旧配置，不会丢失旧组件的配置。
+      <strong>替换</strong>：完全覆盖，旧配置全都丢掉。
+    </div>
+  </div>
+
+  <!-- Demo 3: resize 响应式 -->
+  <div class="demo">
+    <h2>3. resize() 响应式适配</h2>
+    <div id="chart3" class="chart" style="height:250px;"></div>
+    <div class="actions">
+      <button class="btn-pri" onclick="resizeChart()">手动 resize</button>
+      <span id="resizeInfo" style="font-size:13px;color:#666;line-height:32px;margin-left:8px;"></span>
+    </div>
+    <div class="info">
+      改变浏览器窗口大小时调用 <code>chart.resize()</code>。面试重点：debounce 防抖处理。
+    </div>
+  </div>
+
+  <script>
+    // ==================== Demo 1 ====================
+    let chart1, chart2, chart3;
+
+    function initChart1() {
+      if (chart1) chart1.dispose();
+      chart1 = echarts.init(document.getElementById('chart1'));
+      chart1.setOption({
+        title: { text: '月销售额', left: 'center' },
+        tooltip: { trigger: 'axis' },
+        legend: { data: ['销售额', '利润'], bottom: 0 },
+        xAxis: { data: ['1月', '2月', '3月', '4月', '5月', '6月'] },
+        yAxis: { type: 'value' },
+        series: [
+          { name: '销售额', type: 'bar', data: [820, 932, 901, 934, 1290, 1330] },
+          { name: '利润', type: 'line', data: [120, 180, 150, 200, 280, 310] }
+        ]
+      });
+    }
+
+    function disposeChart1() {
+      if (chart1) { chart1.dispose(); chart1 = null; }
+    }
+
+    // ==================== Demo 2 ====================
+    function initChart2() {
+      if (chart2) chart2.dispose();
+      chart2 = echarts.init(document.getElementById('chart2'));
+      resetChart2();
+    }
+
+    function resetChart2() {
+      if (!chart2) return initChart2();
+      chart2.setOption({
+        title: { text: '基础图表' },
+        tooltip: { trigger: 'axis' },
+        xAxis: { data: ['A', 'B', 'C', 'D'] },
+        yAxis: { type: 'value' },
+        series: [
+          { type: 'bar', data: [10, 20, 30, 40] }
+        ]
+      }, true); // 完全替换
+    }
+
+    function mergeOption() {
+      if (!chart2) return initChart2();
+      // notMerge=false(默认): 只更新 series，保留 title/tooltip 等
+      chart2.setOption({
+        series: [
+          { type: 'line', data: [15, 25, 10, 35], smooth: true }
+        ]
+      });
+    }
+
+    function replaceOption() {
+      if (!chart2) return initChart2();
+      // notMerge=true: 完全替换，之前的 tooltip/xAxis 都没了
+      chart2.setOption({
+        series: [
+          { type: 'pie', data: [
+            { name: 'A', value: 10 }, { name: 'B', value: 20 },
+            { name: 'C', value: 30 }, { name: 'D', value: 40 }
+          ]}
+        ]
+      }, true);
+    }
+
+    // ==================== Demo 3 ====================
+    function initChart3() {
+      if (chart3) chart3.dispose();
+      chart3 = echarts.init(document.getElementById('chart3'));
+      chart3.setOption({
+        title: { text: '拖拽窗口或点击 resize 按钮', left: 'center', textStyle: { fontSize: 14 } },
+        xAxis: { data: ['一月', '二月', '三月', '四月', '五月', '六月'] },
+        yAxis: {},
+        series: [{ type: 'bar', data: [23, 24, 18, 25, 27, 28] }]
+      });
+    }
+
+    function resizeChart() {
+      if (!chart3) return;
+      chart3.resize();
+      document.getElementById('resizeInfo').textContent =
+        `容器尺寸: ${chart3.getWidth()} x ${chart3.getHeight()}`;
+    }
+
+    // 初始化所有 chart
+    initChart1();
+    initChart2();
+    initChart3();
+
+    // resize 演示：防抖
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        chart1?.resize();
+        chart2?.resize();
+        chart3?.resize();
+      }, 200);
+    });
+  </script>
+</body>
+</html>

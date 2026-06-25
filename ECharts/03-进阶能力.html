@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>ECharts 进阶能力</title>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.6.0/dist/echarts.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, sans-serif; padding: 20px; background: #f5f5f5; }
+    h1 { margin-bottom: 20px; }
+    .demo { background: #fff; border-radius: 8px; padding: 16px; margin-bottom: 20px; }
+    .demo h2 { font-size: 16px; margin-bottom: 10px; color: #333; }
+    .chart { width: 100%; height: 360px; }
+    .chart-sm { width: 100%; height: 300px; }
+    .actions { margin: 10px 0; display: flex; gap: 8px; flex-wrap: wrap; }
+    button {
+      padding: 6px 16px; border: none; border-radius: 4px;
+      cursor: pointer; font-size: 13px; color: #fff;
+      background: #5470c6;
+    }
+    button:hover { opacity: 0.85; }
+    .log {
+      margin-top: 8px; padding: 8px 12px; background: #f8f8f8;
+      border-radius: 4px; font-size: 13px; max-height: 150px; overflow-y: auto;
+      font-family: monospace; white-space: pre-wrap;
+    }
+    .note { font-size: 12px; color: #999; margin-top: 6px; }
+    code { background: #f0f0f0; padding: 1px 5px; border-radius: 3px; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <h1>Part 3: ECharts 进阶能力</h1>
+
+  <!-- Demo 1: Dataset + Transform -->
+  <div class="demo">
+    <h2>1. Dataset 模式 + 数据过滤 Transform</h2>
+    <div id="chart-dataset" class="chart-sm"></div>
+    <div class="actions">
+      <button onclick="filterAll()">全部数据</button>
+      <button onclick="filterHigh()">利润 > 150</button>
+    </div>
+    <div class="note">
+      <strong>面试加分项</strong>：dataset 做到数据与图表分离，一份数据多图共用。
+      <code>transform: { type: 'filter' }</code> 实现前端数据过滤。
+    </div>
+  </div>
+
+  <!-- Demo 2: 事件系统 -->
+  <div class="demo">
+    <h2>2. 事件系统 — click / legendselectchanged / datazoom</h2>
+    <div id="chart-events" class="chart"></div>
+    <div class="log" id="eventLog">点击图表元素查看事件输出 →</div>
+    <div class="note">
+      <code>chart.on('click', fn)</code> / <code>chart.off('click')</code> 解绑。
+      组件事件：<code>legendselectchanged</code>、<code>datazoom</code> 等。
+    </div>
+  </div>
+
+  <!-- Demo 3: Tooltip + Toolbox + DataZoom 综合 -->
+  <div class="demo">
+    <h2>3. Tooltip自定义 + Toolbox工具箱 + DataZoom缩放</h2>
+    <div id="chart-advanced" class="chart"></div>
+    <div class="note">
+      <strong>Toolbox</strong> 内置保存图片/数据视图/动态切换/还原。
+      <strong>DataZoom</strong> 支持 slider(滑块) 和 inside(滚轮) 两种。
+    </div>
+  </div>
+
+  <!-- Demo 4: 主题 -->
+  <div class="demo">
+    <h2>4. 主题 + visualMap 视觉映射</h2>
+    <div id="chart-theme" class="chart-sm"></div>
+    <div class="actions">
+      <button onclick="switchTheme('default')">默认主题</button>
+      <button onclick="switchTheme('dark')">dark 主题</button>
+      <button onclick="switchTheme('custom')">自定义主题</button>
+    </div>
+    <div class="note">
+      <code>echarts.init(dom, 'dark')</code> 或 <code>echarts.registerTheme()</code> 注册自定义主题。
+    </div>
+  </div>
+
+  <script>
+    // ========== Theme 注册 ==========
+    echarts.registerTheme('custom', {
+      color: ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7'],
+      backgroundColor: '#1a1a2e',
+      textStyle: { color: '#eee' },
+      title: { textStyle: { color: '#eee' } }
+    });
+
+    // ========== 1. Dataset + Transform ==========
+    const datasetChart = echarts.init(document.getElementById('chart-dataset'));
+
+    const baseOption = {
+      title: { text: '产品销售额与利润' },
+      tooltip: { trigger: 'axis' },
+      legend: { data: ['销售额', '利润'], bottom: 0 },
+      dataset: {
+        source: [
+          ['product', 'sales', 'profit'],
+          ['产品A', 820, 120],
+          ['产品B', 932, 180],
+          ['产品C', 901, 110],
+          ['产品D', 934, 200],
+          ['产品E', 1290, 310],
+          ['产品F', 1330, 280]
+        ]
+      },
+      xAxis: { type: 'category' },
+      yAxis: {},
+      series: [
+        { type: 'bar', encode: { x: 'product', y: 'sales' }, name: '销售额' },
+        { type: 'line', encode: { x: 'product', y: 'profit' }, name: '利润' }
+      ]
+    };
+
+    datasetChart.setOption(baseOption);
+
+    function filterAll() {
+      datasetChart.setOption(baseOption, true);
+    }
+
+    function filterHigh() {
+      const filtered = JSON.parse(JSON.stringify(baseOption));
+      filtered.dataset.push({
+        transform: { type: 'filter', config: { dimension: 'profit', rule: { operator: 'gt', value: 150 } } }
+      });
+      // 简单方式：直接过滤 source
+      filtered.dataset[0].source = [
+        ['product', 'sales', 'profit'],
+        ...baseOption.dataset.source.slice(1).filter(row => row[2] > 150)
+      ];
+      delete filtered.dataset[1];
+      datasetChart.setOption(filtered, true);
+    }
+
+    // ========== 2. 事件系统 ==========
+    const eventsChart = echarts.init(document.getElementById('chart-events'));
+    const logEl = document.getElementById('eventLog');
+
+    function log(msg) {
+      logEl.textContent += '\n' + new Date().toLocaleTimeString() + ' ' + msg;
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    eventsChart.setOption({
+      title: { text: '点击柱状图 / 切换图例 / 拖拽缩放', left: 'center', textStyle: { fontSize: 14 } },
+      tooltip: { trigger: 'axis' },
+      legend: { data: ['蒸发量', '降水量'], bottom: 0 },
+      toolbox: { feature: { dataZoom: {}, restore: {} } },
+      xAxis: { data: ['1月','2月','3月','4月','5月','6月'] },
+      yAxis: {},
+      dataZoom: [{ type: 'slider' }, { type: 'inside' }],
+      series: [
+        { name: '蒸发量', type: 'bar', data: [2, 4.9, 7, 23.2, 25.6, 76.7] },
+        { name: '降水量', type: 'bar', data: [2.6, 5.9, 9, 26.4, 28.7, 70.7] }
+      ]
+    });
+
+    // 点击事件
+    eventsChart.on('click', (params) => {
+      log(`点击: series=${params.seriesName}, name=${params.name}, value=${params.value}`);
+    });
+
+    // 图例切换
+    eventsChart.on('legendselectchanged', (params) => {
+      log(`图例切换: ${JSON.stringify(params.selected)}`);
+    });
+
+    // 缩放事件
+    eventsChart.on('datazoom', (params) => {
+      log(`缩放: start=${params.start}%, end=${params.end}%`);
+    });
+
+    // ========== 3. Tooltip + Toolbox + DataZoom ==========
+    const advChart = echarts.init(document.getElementById('chart-advanced'));
+    advChart.setOption({
+      title: { text: '进阶综合示例' },
+      tooltip: {
+        trigger: 'axis',
+        formatter: (params) => {
+          // 面试重点：自定义 tooltip 内容
+          let html = `<strong>${params[0].axisValue}</strong><br/>`;
+          params.forEach(p => {
+            html += `${p.marker} ${p.seriesName}: <b>${p.value}</b> 万元<br/>`;
+          });
+          return html;
+        }
+      },
+      legend: {},
+      toolbox: {
+        feature: {
+          saveAsImage: { title: '保存图片' },
+          dataView: { title: '数据视图', readOnly: false },
+          magicType: { type: ['line', 'bar', 'stack'] },
+          restore: { title: '还原' }
+        }
+      },
+      dataZoom: [
+        { type: 'slider', start: 0, end: 60 },
+        { type: 'inside' }
+      ],
+      xAxis: {
+        type: 'category',
+        data: Array.from({ length: 20 }, (_, i) => `${i + 1}月`)
+      },
+      yAxis: { type: 'value', name: '万元' },
+      series: [
+        {
+          name: '销售额', type: 'bar',
+          data: [120,200,150,80,70,110,130,90,160,180,140,200,170,130,110,150,190,210,160,140]
+        },
+        {
+          name: '利润', type: 'line', smooth: true,
+          data: [15,25,10,5,8,12,18,10,20,25,18,30,22,15,12,20,28,32,22,18]
+        }
+      ]
+    });
+
+    // ========== 4. 主题 + visualMap ==========
+    let themeChart = echarts.init(document.getElementById('chart-theme'));
+
+    const themeOption = {
+      title: { text: '各省销售热力图' },
+      tooltip: {},
+      visualMap: {
+        min: 0, max: 1500,
+        text: ['High', 'Low'],
+        inRange: { color: ['#50a3ba', '#eac736', '#d94e5d'] },
+        calculable: true
+      },
+      xAxis: { data: ['北京','上海','广东','浙江','江苏','山东','四川','湖北','福建','河南'] },
+      yAxis: {},
+      series: [{
+        type: 'bar',
+        data: [1200, 980, 1400, 850, 1100, 900, 720, 650, 780, 560],
+        itemStyle: { borderRadius: [4, 4, 0, 0] }
+      }]
+    };
+
+    themeChart.setOption(themeOption);
+
+    function switchTheme(theme) {
+      const dom = document.getElementById('chart-theme');
+      themeChart.dispose();
+      if (theme === 'dark') {
+        themeChart = echarts.init(dom, 'dark');
+      } else if (theme === 'custom') {
+        themeChart = echarts.init(dom, 'custom');
+      } else {
+        themeChart = echarts.init(dom);
+      }
+      themeChart.setOption(themeOption);
+    }
+
+    // resize
+    window.addEventListener('resize', () => {
+      [datasetChart, eventsChart, advChart, themeChart].forEach(c => c?.resize());
+    });
+  </script>
+</body>
+</html>
